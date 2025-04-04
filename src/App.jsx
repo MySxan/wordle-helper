@@ -3,7 +3,6 @@ import WordInput from './components/WordInput';
 import WordFilter from './components/WordFilter';
 import filterWords from './utils/filterWords';
 
-// 假设的词库
 const wordsList = ['apple', 'grape', 'table', 'blaze', 'plant'];
 
 const App = () => {
