@@ -1,53 +1,29 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-// 定义颜色循环，包含背景、描边和文字的颜色类名
 const colorCycle = [
   { bg: 'bg-gray-200', border: 'border-gray-500', text: 'text-gray-700' },
   { bg: 'bg-green-200', border: 'border-green-600', text: 'text-green-800' },
   { bg: 'bg-yellow-200', border: 'border-yellow-600', text: 'text-yellow-800' },
 ];
 
-// 预设词库
 const dictionary = [
-  "APPLE",
-  "GRAPE",
-  "BANJO",
-  "CHAIR",
-  "BRAVE",
-  "CRANE",
-  "SLATE",
-  "PLATE",
-  "GRACE",
-  "FLARE",
-  "TRAIN",
-  "STARE",
-  "PLATE",
-  "BLAST",
-  "BLACK",
-  "GRIPT",
-  "LEAPT",
-  "STORM",
-  "CROWN",
-  "THUMP",
-  "STUMP",
-  "VANES",
-  "GROWN",
-  "ROAST",
-  "TURIN",
-  "TARES",
+  "APPLE", "GRAPE", "BANJO", "CHAIR", "BRAVE", "CRANE", "SLATE", "PLATE", "GRACE", "FLARE",
+  "TRAIN", "STARE", "PLATE", "BLAST", "BLACK", "GRIPT", "LEAPT", "STORM", "CROWN", "THUMP",
+  "STUMP", "VANES", "GROWN", "ROAST", "TURIN", "TARES", "REACT", "STATE", "SALER", "TEARS",
 ];
 
 function App() {
-  // cells 数组保存 5 个格子的状态，每个对象包含 letter 和 cycleIndex（-1 表示还未填写）
+  // array of cells
   const [cells, setCells] = useState(Array(5).fill({ letter: '', cycleIndex: -1 }));
-  // 当前选中的格子索引，初始默认选中第一个格子
+  // index of selected cell
   const [selectedIndex, setSelectedIndex] = useState(0);
   const hasInput = cells.some(cell => cell.letter !== '');
 
-  // 监听全局键盘事件处理字母输入和退格键删除
+  // listen to user input
   useEffect(() => {
     const handleKeyDown = (e) => {
-      // 退格键：如果当前格子有字母则删除，否则退回到前一个格子并删除
+
+      // backspace：delete if current cell is not empty, or back to the previous cell
       if (e.key === 'Backspace') {
         setCells((prev) => {
           const newCells = [...prev];
@@ -62,14 +38,14 @@ function App() {
         return;
       }
 
-      // 输入单个字母时（忽略大小写）
+      // letters
       if (/^[a-zA-Z]$/.test(e.key)) {
         setCells((prev) => {
           const newCells = [...prev];
-          // 仅在当前选中格子为空时填入字母，并设置颜色循环起始为 0（灰色）
+          // fill in the cell and initialize color if empty 
           if (newCells[selectedIndex].letter === '') {
             newCells[selectedIndex] = { letter: e.key.toUpperCase(), cycleIndex: 0 };
-            // 若还有后续格子，则自动聚焦下一个空格
+            // focus on the next cell if exist
             if (selectedIndex < newCells.length - 1) {
               setSelectedIndex(selectedIndex + 1);
             }
@@ -77,13 +53,14 @@ function App() {
           return newCells;
         });
       }
+
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [selectedIndex]);
 
-  // 点击格子时：若格子已填写字母则循环切换颜色，同时设为当前选中
+  // cycle through colors and focus on the cell if it is not empty
   const handleCellClick = (index) => {
     if (cells[index].letter !== '') {
       setCells((prev) => {
@@ -97,21 +74,20 @@ function App() {
     setSelectedIndex(index);
   };
 
-  // 根据 cells 当前状态过滤出符合条件的单词
+  // filter words base on the rules
   const filteredWords = dictionary.filter((word) => {
     for (let i = 0; i < cells.length; i++) {
       const cell = cells[i];
       if (cell.letter !== '') {
-        // 根据颜色状态进行判断
         if (cell.cycleIndex === 1) {
-          // 绿色：该位置必须匹配
+          // green
           if (word[i] !== cell.letter) return false;
         } else if (cell.cycleIndex === 2) {
-          // 黄色：该字母必须存在于单词中，但不能在该位置
+          // yellow
           if (word[i] === cell.letter) return false;
           if (!word.includes(cell.letter)) return false;
         } else if (cell.cycleIndex === 0) {
-          // 灰色：该字母不应出现在单词中
+          // gray
           if (word.includes(cell.letter)) return false;
         }
       }
@@ -119,7 +95,7 @@ function App() {
     return true;
   });
 
-  // 截取前 60 个符合条件的单词并按 5 个词一行显示
+  // join filtered words
   const displayedWords = filteredWords.slice(0, 60);
   const rows = [];
   for (let i = 0; i < displayedWords.length; i += 5) {
@@ -132,7 +108,7 @@ function App() {
       <h1 className="text-6xl font-serif font-medium mb-4 text-gray-700">Wordle Helper</h1>
       <div className="flex space-x-4 font-mono select-none">
         {cells.map((cell, index) => {
-          // 如果格子已填写字母，则根据 cycleIndex 获取对应的背景、边框和文字颜色
+          // fetch style base on cycleIndex
           let bgClass = 'bg-white';
           let borderColorClass = 'border-gray-600';
           let textColorClass = 'text-black';
@@ -158,8 +134,6 @@ function App() {
 
       <hr className="min-w-96 border-gray-400" />
 
-
-      {/* Wordle helper 提示区域 */}
       <div className="min-w-96 ">
         {cells.every(cell => cell.letter === '') ? (
           <p className="text-gray-600 pt-0.5 font-serif">
@@ -186,7 +160,6 @@ function App() {
           </div>
         )}
       </div>
-
     </div>
   );
 }
