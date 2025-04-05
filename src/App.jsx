@@ -103,8 +103,13 @@ function App() {
   }
 
   return (
-    <div className={`justify-start min-h-screen flex flex-col items-center transition-all duration-1000 space-y-8 
-      ${hasInput ? 'pt-40' : 'pt-72'}`}>
+    <div className={`justify-start min-h-screen flex flex-col items-center transition-all duration-1000 space-y-8 `}>
+      <div
+        className={`w-full flex flex-col items-center transition-all duration-500 ease-in-out`}
+        style={{
+          marginTop: hasInput ? '2rem' : 'calc(50vh - 15rem)', // dynamic calc
+        }}
+      ></div>
       <h1 className="text-6xl font-serif font-medium mb-4 text-gray-700">Wordle Helper</h1>
       <div className="flex space-x-4 font-mono select-none">
         {cells.map((cell, index) => {
