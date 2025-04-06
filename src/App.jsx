@@ -151,11 +151,14 @@ function App() {
             `https://api.dictionaryapi.dev/api/v2/entries/en/${filteredWords[0].toLowerCase()}`
           );
           const data = await res.json();
-          const firstDef =
-            data[0]?.meanings?.[0]?.definitions?.[0]?.definition || '';
-          setDefinition(firstDef);
-          // eslint-disable-next-line no-unused-vars
-        } catch (err) {
+          const firstMeaning = data[0]?.meanings?.[0];
+          const partOfSpeech = firstMeaning?.partOfSpeech || '';
+          const definitionText =
+            firstMeaning?.definitions?.[0]?.definition || '';
+          setDefinition(
+            `${partOfSpeech ? `(${partOfSpeech}) ` : ''} ${definitionText}`
+          );
+        } catch {
           setDefinition('No definition found.');
         }
       };
@@ -220,11 +223,14 @@ function App() {
             <span className='font-bold text-gray-600'>Gray</span> - Letter
             should not appear in the word.
           </p>
-        ) : (filteredWords.length <= 4) & (filteredWords.length != 0) ? (
-          <div className='text-4xl text-gray-800 font-serif font-semibold text-center space-y-2 -mt-2'>
+        ) : (filteredWords.length === 1) ? (
+          <div className='text-4xl text-gray-800 font-serif font-medium text-center space-y-2 -mt-2'>
             {filteredWords.map((word, idx) => (
               <p key={idx}>{word}</p>
-            ))}
+            ))}{' '}
+            <div className='max-w-lg px-12 text-center text-lg text-gray-800 font-serif italic font-normal'>
+              {definition}
+            </div>
           </div>
         ) : (
           <div className='text-lg text-gray-700 -mt-2'>
@@ -248,10 +254,6 @@ function App() {
             )}
           </div>
         )}
-      </div>
-
-      <div className='max-w-lg -pt-8 px-12 text-center text-lg text-gray-800 font-serif italic'>
-        {definition}
       </div>
     </div>
   );
