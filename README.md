@@ -9,8 +9,13 @@ A React-based Wordle helper tool that helps players refine their guesses by prov
   - **Green**: The letter is correct and in the right spot.
   - **Yellow**: The letter is correct but in the wrong spot.
   - **Gray**: The letter should not appear in the word.
-- **Word Filtering**: Based on user feedback, the app filters possible words and shows you only the ones that match the provided clues.
+- **Word Filtering**: Based on user feedback, the app filters possible words and only shows the ones that match the provided clues.
 - **Word Definition**: If only one word matches the filter, its definition will be fetched from an API and displayed.
+
+## Live Demo
+
+You can try the app live here:  
+[https://mysxan.github.io/wordle-helper/](https://mysxan.github.io/wordle-helper/)
 
 ## Installation
 
