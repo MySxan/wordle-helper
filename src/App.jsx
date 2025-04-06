@@ -222,7 +222,7 @@ function App() {
             <span className='font-bold text-gray-600'>Gray</span> - Letter
             should not appear in the word.
           </p>
-        ) : filteredWords.length === 1 ? (
+        ) : (filteredWords.length === 1) ? (
           <div className='text-4xl text-gray-800 font-serif font-medium text-center space-y-2 -mt-2'>
             {filteredWords.map((word, idx) => (
               <p key={idx}>{word}</p>
