@@ -1,12 +1,62 @@
-# React + Vite
+# Wordle Helper
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A React-based Wordle helper tool that helps players refine their guesses by providing feedback on their guesses and filtering possible words accordingly.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Real-Time Input**: Type letters in order and use the backspace key to delete.
+- **Color-Coded Feedback**: Click on any guessed letter to cycle through:
+  - **Green**: The letter is correct and in the right spot.
+  - **Yellow**: The letter is correct but in the wrong spot.
+  - **Gray**: The letter should not appear in the word.
+- **Word Filtering**: Based on user feedback, the app filters possible words and shows you only the ones that match the provided clues.
+- **Word Definition**: If only one word matches the filter, its definition will be fetched from an API and displayed.
 
-## Expanding the ESLint configuration
+## Installation
 
-If you are developing a production application, we recommend using TypeScript and enable type-aware lint rules. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+To run the app locally, follow these steps:
+
+1. Clone the repository:
+
+   ```bash
+   git clone https://github.com/mysxan/wordle-helper.git
+   ```
+
+2. Navigate to the project directory:
+
+   ```bash
+   cd wordle-helper
+   ```
+
+3. Install the dependencies:
+
+   ```bash
+   npm install
+   ```
+
+4. Run the app:
+
+   ```bash
+   npm run dev
+   ```
+
+5. Your app will be running at http://localhost:xxxx/ displayed in the terminal.
+
+## How to Use
+
+1. Type letters in the input grid to make guesses.
+2. Use Backspace to delete letters and adjust your guesses.
+3. Click on any cell to cycle its color between:
+   **Green**: Letter is in the right place.
+   **Yellow**: Letter is in the word but in the wrong place.
+   **Gray**: Letter doesn't exist in the word.
+4. The possible matching words will be shown based on your inputs.
+5. If only one word matches, its definition will be displayed below.
+
+## Contributing
+
+Feel free to fork this project, submit issues, or open pull requests for new features and improvements!
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
