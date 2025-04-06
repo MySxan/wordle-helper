@@ -1,42 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import dictionary from './assets/words.json';
 
 const colorCycle = [
   { bg: 'bg-gray-200', border: 'border-gray-500', text: 'text-gray-700' },
   { bg: 'bg-green-200', border: 'border-green-600', text: 'text-green-800' },
   { bg: 'bg-yellow-200', border: 'border-yellow-600', text: 'text-yellow-800' },
-];
-
-const dictionary = [
-  'APPLE',
-  'GRAPE',
-  'BANJO',
-  'CHAIR',
-  'BRAVE',
-  'CRANE',
-  'SLATE',
-  'PLATE',
-  'GRACE',
-  'FLARE',
-  'TRAIN',
-  'STARE',
-  'PLATE',
-  'BLAST',
-  'BLACK',
-  'GRIPT',
-  'LEAPT',
-  'STORM',
-  'CROWN',
-  'THUMP',
-  'STUMP',
-  'VANES',
-  'GROWN',
-  'ROAST',
-  'TURIN',
-  'TARES',
-  'REACT',
-  'STATE',
-  'SALER',
-  'TEARS',
 ];
 
 function App() {
@@ -45,8 +13,7 @@ function App() {
   ]);
   const [selectedRowIndex, setSelectedRowIndex] = useState(0);
   const [selectedCellIndex, setSelectedCellIndex] = useState(0);
-
-  const hasInput = rows.some((row) => row.some((cell) => cell.letter !== ''));
+  const [shifted, setShifted] = useState(false);
 
   // listen to user input
   useEffect(() => {
@@ -92,9 +59,14 @@ function App() {
       });
     };
 
+    // shift if more than one row
+    if (rows.length > 1 && !shifted) {
+      setShifted(true);
+    }
+
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedRowIndex, selectedCellIndex, rows.length]);
+  }, [selectedRowIndex, selectedCellIndex, rows.length, shifted]);
 
   // cycle through colors and focus on the cell if it is not empty
   const handleCellClick = (rowIdx, colIdx) => {
@@ -115,27 +87,54 @@ function App() {
     setSelectedCellIndex(colIdx);
   };
 
-  // filter words base on the rules
-  const filteredWords = dictionary.filter((word) => {
-    for (const row of rows) {
-      for (let i = 0; i < 5; i++) {
-        const cell = row[i];
-        if (cell.letter !== '') {
-          if (cell.cycleIndex === 1 && word[i] !== cell.letter) return false;
-          if (
-            cell.cycleIndex === 2 &&
-            (word[i] === cell.letter || !word.includes(cell.letter))
-          )
-            return false;
-          if (cell.cycleIndex === 0 && word.includes(cell.letter)) return false;
+  function matchesFeedback(word, row) {
+    const target = word.toUpperCase().split(''); // 确保目标词是大写
+    const guess = row.map((c) => c.letter.toUpperCase()); // 确保用户输入是大写
+    const result = Array(5).fill(-1); // 对应 cycleIndex
+
+    const used = Array(5).fill(false); // 标记已匹配的位置
+
+    // Step 1: Match green
+    for (let i = 0; i < 5; i++) {
+      if (guess[i] === target[i]) {
+        result[i] = 1; // Green
+        used[i] = true;
+      }
+    }
+
+    // Step 2: Match yellow
+    for (let i = 0; i < 5; i++) {
+      if (result[i] !== -1 || guess[i] === '') continue;
+      for (let j = 0; j < 5; j++) {
+        if (!used[j] && guess[i] === target[j]) {
+          result[i] = 2; // Yellow
+          used[j] = true;
+          break;
         }
       }
     }
+
+    // Step 3: Others are gray
+    for (let i = 0; i < 5; i++) {
+      if (result[i] === -1 && guess[i] !== '') result[i] = 0;
+    }
+
+    // Compare with user's marked colors
+    for (let i = 0; i < 5; i++) {
+      if (row[i].letter === '') continue;
+      if (row[i].cycleIndex !== result[i]) return false;
+    }
+
     return true;
+  }
+
+  // filter words base on the rules
+  const filteredWords = dictionary.filter((word) => {
+    return rows.every((row) => matchesFeedback(word.toUpperCase(), row));
   });
 
   // join filtered words
-  const displayedWords = filteredWords.slice(0, 99);
+  const displayedWords = filteredWords.slice(0, 70);
   const wordRows = [];
   for (let i = 0; i < displayedWords.length; i += 5) {
     wordRows.push(displayedWords.slice(i, i + 5));
@@ -151,11 +150,14 @@ function App() {
             `https://api.dictionaryapi.dev/api/v2/entries/en/${filteredWords[0].toLowerCase()}`
           );
           const data = await res.json();
-          const firstDef =
-            data[0]?.meanings?.[0]?.definitions?.[0]?.definition || '';
-          setDefinition(firstDef);
-          // eslint-disable-next-line no-unused-vars
-        } catch (err) {
+          const firstMeaning = data[0]?.meanings?.[0];
+          const partOfSpeech = firstMeaning?.partOfSpeech || '';
+          const definitionText =
+            firstMeaning?.definitions?.[0]?.definition || '';
+          setDefinition(
+            `${partOfSpeech ? `(${partOfSpeech}) ` : ''} ${definitionText}`
+          );
+        } catch {
           setDefinition('No definition found.');
         }
       };
@@ -168,7 +170,7 @@ function App() {
   return (
     <div
       className='justify-start flex flex-col items-center transition-all duration-1000 space-y-8'
-      style={{ marginTop: hasInput ? '5rem' : 'calc(50vh - 15rem)' }}
+      style={{ marginTop: shifted ? '5rem' : 'calc(50vh - 15rem)' }}
     >
       <h1 className='text-6xl font-serif font-medium mb-4 text-gray-700'>
         Wordle Helper
@@ -220,11 +222,14 @@ function App() {
             <span className='font-bold text-gray-600'>Gray</span> - Letter
             should not appear in the word.
           </p>
-        ) : (filteredWords.length <= 4) & (filteredWords.length != 0) ? (
-          <div className='text-4xl text-gray-800 font-serif font-semibold text-center space-y-2 -mt-2'>
+        ) : filteredWords.length === 1 ? (
+          <div className='text-4xl text-gray-800 font-serif font-medium text-center space-y-2 -mt-2'>
             {filteredWords.map((word, idx) => (
               <p key={idx}>{word}</p>
-            ))}
+            ))}{' '}
+            <div className='max-w-lg px-12 text-center text-lg text-gray-800 font-serif italic font-normal'>
+              {definition}
+            </div>
           </div>
         ) : (
           <div className='text-lg text-gray-700 -mt-2'>
@@ -248,10 +253,6 @@ function App() {
             )}
           </div>
         )}
-      </div>
-
-      <div className='max-w-lg -pt-8 px-12 text-center text-lg text-gray-800 font-serif italic'>
-        {definition}
       </div>
     </div>
   );
