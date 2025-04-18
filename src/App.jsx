@@ -9,7 +9,7 @@ const colorCycle = [
 
 function App() {
   const [rows, setRows] = useState([
-    Array(5).fill({ letter: '', cycleIndex: -1}),
+    Array(5).fill({ letter: '', cycleIndex: -1 }),
   ]);
   const [selectedRowIndex, setSelectedRowIndex] = useState(0);
   const [selectedCellIndex, setSelectedCellIndex] = useState(0);
@@ -21,6 +21,25 @@ function App() {
       setRows((prev) => {
         const updated = [...prev];
         const row = [...updated[selectedRowIndex]];
+
+        // arrows: move around
+        if (e.key === 'ArrowLeft' && selectedCellIndex > 0) {
+          setSelectedCellIndex(selectedCellIndex - 1);
+        } else if (e.key === 'ArrowRight' && selectedCellIndex < 4) {
+          setSelectedCellIndex(selectedCellIndex + 1);
+        }
+
+        // whitespace & Enter: move to next cell
+        if (e.key === ' ' || e.key === 'Enter') {
+          e.preventDefault();
+          const nextEmpty = row.findIndex(
+            (cell, idx) => idx > selectedCellIndex && cell.letter === ''
+          );
+          if (nextEmpty !== -1) {
+            setSelectedCellIndex(nextEmpty);
+          }
+          return prev;
+        }
 
         // backspace：delete if current cell is not empty, or back to the previous cell
         if (e.key === 'Backspace') {
@@ -89,13 +108,12 @@ function App() {
 
   // filter rules
   function matchesFeedback(word, row) {
-    const target = word.toUpperCase().split(''); // 确保目标词是大写
-    const guess = row.map((c) => c.letter.toUpperCase()); // 确保用户输入是大写
-    const result = Array(5).fill(-1); // 对应 cycleIndex
+    const target = word.toUpperCase().split('');
+    const guess = row.map((c) => c.letter.toUpperCase());
+    const result = Array(5).fill(-1);
+    const used = Array(5).fill(false);
 
-    const used = Array(5).fill(false); // 标记已匹配的位置
-
-    // Step 1: Match green
+    // Match green
     for (let i = 0; i < 5; i++) {
       if (guess[i] === target[i]) {
         result[i] = 1; // Green
@@ -103,7 +121,7 @@ function App() {
       }
     }
 
-    // Step 2: Match yellow
+    // Match yellow
     for (let i = 0; i < 5; i++) {
       if (result[i] !== -1 || guess[i] === '') continue;
       for (let j = 0; j < 5; j++) {
@@ -115,7 +133,7 @@ function App() {
       }
     }
 
-    // Step 3: Others are gray
+    // Others are gray
     for (let i = 0; i < 5; i++) {
       if (result[i] === -1 && guess[i] !== '') result[i] = 0;
     }
