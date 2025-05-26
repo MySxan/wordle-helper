@@ -47,17 +47,6 @@ To run the app locally, follow these steps:
 
 5. Your app will be running at http://localhost:xxxx/ displayed in the terminal.
 
-## How to Use
-
-1. Type letters in the input grid to make guesses.
-2. Use Backspace to delete letters and adjust your guesses.
-3. Click on any cell to cycle its color between:
-   - **Green**: Letter is in the right place.
-   - **Yellow**: Letter is in the word but in the wrong place.
-   - **Gray**: Letter doesn't exist in the word.
-4. The possible matching words will be shown based on your inputs.
-5. If only one word matches, its definition will be displayed below.
-
 ## Contributing
 
 Feel free to fork this project, submit issues, or open pull requests for new features and improvements!
