@@ -41,7 +41,11 @@ function App() {
 
         // whitespace & Enter: move to next cell
         if (e.key === ' ' || e.key === 'Enter') {
-          if (selectedCellIndex === 4 && prev.length < 5) {
+          if (
+            selectedRowIndex === prev.length - 1 &&
+            selectedCellIndex === 4 &&
+            prev.length < 5
+          ) {
             updated.push(Array(5).fill({ letter: '', cycleIndex: -1 }));
             setSelectedRowIndex(prev.length);
             setSelectedCellIndex(0);
