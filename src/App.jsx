@@ -18,6 +18,13 @@ function App() {
   // listen to user input
   useEffect(() => {
     const handleKeyDown = (e) => {
+      //prevent default actions for certain keys
+      if (
+        [' ', 'Enter', 'ArrowLeft', 'ArrowRight', 'Backspace'].includes(e.key)
+      ) {
+        e.preventDefault();
+      }
+
       setRows((prev) => {
         const updated = [...prev];
         const row = [...updated[selectedRowIndex]];
@@ -25,13 +32,21 @@ function App() {
         // arrows: move around
         if (e.key === 'ArrowLeft' && selectedCellIndex > 0) {
           setSelectedCellIndex(selectedCellIndex - 1);
-        } else if (e.key === 'ArrowRight' && selectedCellIndex < 4) {
+          return prev;
+        }
+        if (e.key === 'ArrowRight' && selectedCellIndex < row.length - 1) {
           setSelectedCellIndex(selectedCellIndex + 1);
+          return prev;
         }
 
         // whitespace & Enter: move to next cell
         if (e.key === ' ' || e.key === 'Enter') {
-          e.preventDefault();
+          if (selectedCellIndex === 4 && prev.length < 5) {
+            updated.push(Array(5).fill({ letter: '', cycleIndex: -1 }));
+            setSelectedRowIndex(prev.length);
+            setSelectedCellIndex(0);
+            return updated;
+          }
           const nextEmpty = row.findIndex(
             (cell, idx) => idx > selectedCellIndex && cell.letter === ''
           );
@@ -43,7 +58,21 @@ function App() {
 
         // backspace：delete if current cell is not empty, or back to the previous cell
         if (e.key === 'Backspace') {
-          if (row[selectedCellIndex].letter !== '') {
+          const isRowEmpty = row.every((cell) => cell.letter === '');
+
+          // Delete the entire row if it is empty and not the first row
+          if (isRowEmpty && selectedRowIndex > 0) {
+            const newRows = updated.filter(
+              (_, idx) => idx !== selectedRowIndex
+            );
+
+            // Updete selected row and cell indices
+            const newRowIndex = Math.min(selectedRowIndex, newRows.length - 1);
+            setSelectedRowIndex(newRowIndex);
+            setSelectedCellIndex(row.length - 1);
+
+            return newRows;
+          } else if (row[selectedCellIndex].letter !== '') {
             row[selectedCellIndex] = { letter: '', cycleIndex: -1 };
           } else if (selectedCellIndex > 0) {
             row[selectedCellIndex - 1] = { letter: '', cycleIndex: -1 };
@@ -60,7 +89,7 @@ function App() {
               letter: e.key.toUpperCase(),
               cycleIndex: 0,
             };
-            if (selectedCellIndex < 4) {
+            if (selectedCellIndex < row.length - 1) {
               setSelectedCellIndex(selectedCellIndex + 1);
             } else if (
               selectedRowIndex === rows.length - 1 &&
