@@ -111,14 +111,16 @@ function App() {
       });
     };
 
-    // shift if more than one row
-    if (rows.length > 1 && !shifted) {
+    // shift if has input
+    if (rows.flat().every((cell) => cell.letter === '')) {
+      setShifted(false);
+    } else if (!shifted) {
       setShifted(true);
     }
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedRowIndex, selectedCellIndex, rows.length, shifted]);
+  }, [selectedRowIndex, selectedCellIndex, shifted, rows]);
 
   // cycle through colors and focus on the cell if it is not empty
   const handleCellClick = (rowIdx, colIdx) => {
