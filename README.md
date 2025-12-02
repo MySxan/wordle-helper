@@ -14,8 +14,7 @@ A React-based Wordle helper tool that helps players refine their guesses by prov
 
 ## Live Demo
 
-You can try the app live here:  
-[https://mysxan.github.io/wordle-helper/](https://mysxan.github.io/wordle-helper/)
+You can try the app live here:  [https://mysxan.github.io/wordle-helper/](https://mysxan.github.io/wordle-helper/)
 
 ## Installation
 
@@ -53,4 +52,4 @@ Feel free to fork this project, submit issues, or open pull requests for new fea
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the [MIT License](LICENSE).
