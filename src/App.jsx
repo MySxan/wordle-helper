@@ -129,7 +129,6 @@ function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleKeyInput, selectedRowIndex, selectedCellIndex, shifted, rows]);
 
-
   // cycle through colors and focus on the cell if it is not empty
   const handleCellClick = (rowIdx, colIdx) => {
     const cell = rows[rowIdx][colIdx];
@@ -327,7 +326,7 @@ function App() {
       </nav>
       <div
         ref={linksRef}
-        className='fixed right-4 bottom-44 lg:bottom-4 z-50 flex flex-col items-end space-y-2'
+        className='fixed right-4 bottom-48 lg:bottom-4 z-50 flex flex-col items-end space-y-2'
       >
         <div
           className={`flex flex-col items-end space-y-2 transition-all duration-200 ${
@@ -422,8 +421,8 @@ function App() {
               className='flex space-x-2 sm:space-x-4 font-mono select-none'
             >
               {row.map((cell, colIdx) => {
-                let bgClass = 'bg-white';
-                let borderColorClass = 'border-gray-600';
+                let bgClass = 'bg-white dark:bg-gray-600';
+                let borderColorClass = 'border-gray-600 dark:border-gray-300';
                 let textColorClass = 'text-black';
                 if (cell.letter !== '' && cell.cycleIndex !== -1) {
                   bgClass = colorCycle[cell.cycleIndex].bg;
@@ -461,8 +460,8 @@ function App() {
               Click a cell to cycle through filter rules: <br />
               <span className='font-black text-green-600'>Green</span> - Letter
               is correct and in the right spot. <br />
-              <span className='font-black text-yellow-600'>Yellow</span> - Letter
-              is correct but in the wrong spot. <br />
+              <span className='font-black text-yellow-600'>Yellow</span> -
+              Letter is correct but in the wrong spot. <br />
               <span className='font-black text-gray-600'>Gray</span> - Letter
               should not appear in the word.
             </p>
@@ -508,8 +507,8 @@ function App() {
           )}
         </div>
       </div>
-      <div className='fixed bottom-0 left-0 right-0 z-40 lg:hidden bg-white/95 dark:bg-gray-800/95 border-t border-gray-200 dark:border-gray-700 backdrop-blur'>
-        <div className='max-w-xl mx-auto px-3 py-3 space-y-2'>
+      <div className='fixed bottom-0 left-0 right-0 z-40 lg:hidden bg-white/95 dark:bg-gray-800/95 border-t border-gray-200 dark:border-gray-700 backdrop-blur safe-area-bottom'>
+        <div className='max-w-xl mx-auto px-3 pt-3 pb-[calc(12px+env(safe-area-inset-bottom))] space-y-2'>
           <div className='flex justify-center space-x-1'>
             {'QWERTYUIOP'.split('').map((key) => (
               <button
@@ -539,11 +538,11 @@ function App() {
           <div className='flex justify-center space-x-1'>
             <button
               type='button'
-              onClick={() => handleKeyInput('Backspace')}
+              onClick={() => handleKeyInput('Enter')}
               className='flex-[1.3] h-10 rounded-md bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold'
-              aria-label='Backspace'
+              aria-label='Enter'
             >
-              Del
+              Next
             </button>
             {'ZXCVBNM'.split('').map((key) => (
               <button
@@ -558,11 +557,11 @@ function App() {
             ))}
             <button
               type='button'
-              onClick={() => handleKeyInput('Enter')}
+              onClick={() => handleKeyInput('Backspace')}
               className='flex-[1.3] h-10 rounded-md bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold'
-              aria-label='Enter'
+              aria-label='Backspace'
             >
-              Next
+              Del
             </button>
           </div>
         </div>

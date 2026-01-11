@@ -45,7 +45,7 @@ To run the app locally, follow these steps:
    npm run dev
    ```
 
-5. Your app will be running at http://localhost:xxxx/ displayed in the terminal.
+5. Your app will be running at <http://localhost:xxxx/> displayed in the terminal.
 
 ## Contributing
 

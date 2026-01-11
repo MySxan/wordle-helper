@@ -40,3 +40,7 @@ body {
   scrollbar-width: none; /* Firefox */
   user-select: none;
 }
+
+.safe-area-bottom {
+  padding-bottom: max(12px, env(safe-area-inset-bottom));
+}
