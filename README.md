@@ -53,4 +53,4 @@ Feel free to fork this project, submit issues, or open pull requests for new fea
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the [MIT License](LICENSE).
