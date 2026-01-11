@@ -5,7 +5,7 @@
   "type": "module",
   "homepage": "https://mysxan.github.io/wordle-helper",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host 0.0.0.0",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"

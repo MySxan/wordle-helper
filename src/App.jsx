@@ -260,10 +260,14 @@ function App() {
     const updateLinksOffset = () => {
       const viewport = window.visualViewport;
       const keyboardOffset = viewport
-        ? Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop)
+        ? Math.max(0, window.innerHeight - viewport.height)
         : 0;
       const keyboardHeight = keyboardRef.current?.offsetHeight || 0;
-      const value = `calc(${keyboardHeight}px + ${keyboardOffset}px + env(safe-area-inset-bottom) + 0.75rem)`;
+      const isStandalone =
+        window.matchMedia?.('(display-mode: standalone)').matches ||
+        window.navigator.standalone;
+      const gap = isStandalone ? '-1.1rem' : '1rem';
+      const value = `calc(${keyboardHeight}px + ${keyboardOffset}px + env(safe-area-inset-bottom) + ${gap})`;
       document.documentElement.style.setProperty(
         '--links-bottom-mobile',
         value
@@ -273,12 +277,10 @@ function App() {
     updateLinksOffset();
     window.addEventListener('resize', updateLinksOffset);
     window.visualViewport?.addEventListener('resize', updateLinksOffset);
-    window.visualViewport?.addEventListener('scroll', updateLinksOffset);
 
     return () => {
       window.removeEventListener('resize', updateLinksOffset);
       window.visualViewport?.removeEventListener('resize', updateLinksOffset);
-      window.visualViewport?.removeEventListener('scroll', updateLinksOffset);
     };
   }, []);
 
