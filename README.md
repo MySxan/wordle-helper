@@ -15,7 +15,7 @@ A React-based Wordle helper tool that helps players refine their guesses by prov
 ## Live Demo
 
 You can try the app live here:  
-[https://mysxan.github.io/wordle-helper/](https://mysxan.github.io/wordle-helper/)
+[https://mysxan.com/wordle-helper/](https://mysxan.com/wordle-helper/)
 
 ## Installation
 

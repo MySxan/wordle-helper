@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import dictionary from './assets/words.json';
 
 const colorCycle = [
@@ -15,32 +15,24 @@ function App() {
   const [selectedCellIndex, setSelectedCellIndex] = useState(0);
   const [shifted, setShifted] = useState(false);
 
-  // listen to user input
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      //prevent default actions for certain keys
-      if (
-        [' ', 'Enter', 'ArrowLeft', 'ArrowRight', 'Backspace'].includes(e.key)
-      ) {
-        e.preventDefault();
-      }
-
+  const handleKeyInput = useCallback(
+    (key) => {
       setRows((prev) => {
         const updated = [...prev];
         const row = [...updated[selectedRowIndex]];
 
         // arrows: move around
-        if (e.key === 'ArrowLeft' && selectedCellIndex > 0) {
+        if (key === 'ArrowLeft' && selectedCellIndex > 0) {
           setSelectedCellIndex(selectedCellIndex - 1);
           return prev;
         }
-        if (e.key === 'ArrowRight' && selectedCellIndex < row.length - 1) {
+        if (key === 'ArrowRight' && selectedCellIndex < row.length - 1) {
           setSelectedCellIndex(selectedCellIndex + 1);
           return prev;
         }
 
         // whitespace & Enter: move to next cell
-        if (e.key === ' ' || e.key === 'Enter') {
+        if (key === ' ' || key === 'Enter') {
           if (
             selectedRowIndex === prev.length - 1 &&
             selectedCellIndex === 4 &&
@@ -61,7 +53,7 @@ function App() {
         }
 
         // backspace：delete if current cell is not empty, or back to the previous cell
-        if (e.key === 'Backspace') {
+        if (key === 'Backspace') {
           const isRowEmpty = row.every((cell) => cell.letter === '');
 
           // Delete the entire row if it is empty and not the first row
@@ -87,10 +79,10 @@ function App() {
         }
 
         // letters
-        if (/^[a-zA-Z]$/.test(e.key)) {
+        if (/^[a-zA-Z]$/.test(key)) {
           if (row[selectedCellIndex].letter === '') {
             row[selectedCellIndex] = {
-              letter: e.key.toUpperCase(),
+              letter: key.toUpperCase(),
               cycleIndex: 0,
             };
             if (selectedCellIndex < row.length - 1) {
@@ -109,6 +101,21 @@ function App() {
         }
         return updated;
       });
+    },
+    [rows.length, selectedCellIndex, selectedRowIndex]
+  );
+
+  // listen to user input
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      //prevent default actions for certain keys
+      if (
+        [' ', 'Enter', 'ArrowLeft', 'ArrowRight', 'Backspace'].includes(e.key)
+      ) {
+        e.preventDefault();
+      }
+
+      handleKeyInput(e.key);
     };
 
     // shift if has input
@@ -120,7 +127,8 @@ function App() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedRowIndex, selectedCellIndex, shifted, rows]);
+  }, [handleKeyInput, selectedRowIndex, selectedCellIndex, shifted, rows]);
+
 
   // cycle through colors and focus on the cell if it is not empty
   const handleCellClick = (rowIdx, colIdx) => {
@@ -223,6 +231,8 @@ function App() {
 
   // dark mode
   const [darkMode, setDarkMode] = useState(false);
+  const [showLinks, setShowLinks] = useState(false);
+  const linksRef = useRef(null);
   useEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add('dark');
@@ -231,18 +241,111 @@ function App() {
     }
   }, [darkMode]);
 
+  useEffect(() => {
+    if (!showLinks) return;
+    const handleOutsideClick = (event) => {
+      if (linksRef.current && !linksRef.current.contains(event.target)) {
+        setShowLinks(false);
+      }
+    };
+    document.addEventListener('mousedown', handleOutsideClick);
+    document.addEventListener('touchstart', handleOutsideClick);
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideClick);
+      document.removeEventListener('touchstart', handleOutsideClick);
+    };
+  }, [showLinks]);
+
+  const topbarButtonClass =
+    'p-2 rounded-full text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors';
+
+  const contentStyle = {
+    paddingTop: shifted
+      ? 'calc(var(--topbar-height) + var(--topbar-gap))'
+      : 'max(calc(50vh - 22rem + (var(--topbar-height) / 2) + var(--topbar-gap)), calc(var(--topbar-height) + var(--topbar-gap)))',
+    minHeight: 'calc(100vh - var(--topbar-height))',
+  };
+
   return (
     <div className='min-h-screen bg-white dark:bg-gray-800 transition-colors duration-300'>
-      <nav className='w-full py-4 px-6 flex justify-between items-center border-b border-gray-200 dark:border-gray-700'>
-        {/* Github link */}
-        <div className='flex items-center space-x-4'>
+      <nav className='fixed top-0 left-0 right-0 z-50 w-full h-16 sm:h-20 px-4 sm:px-6 flex justify-between items-center border-b border-gray-200 dark:border-gray-700 bg-white/90 dark:bg-gray-800/90 backdrop-blur'>
+        <div className='flex items-center space-x-3'>
+          <img
+            src={`${import.meta.env.BASE_URL}icon-192.png`}
+            alt='Wordle Helper logo'
+            className='h-9 w-9 sm:h-10 sm:w-10'
+          />
+          <span className='text-xl sm:text-3xl font-serif font-semibold text-gray-700 dark:text-gray-200'>
+            Wordle Helper
+          </span>
+        </div>
+
+        <div className='flex items-center space-x-3'>
+          {/* Reset button */}
+          <button
+            onClick={() => window.location.reload()}
+            className={topbarButtonClass}
+            aria-label='Reset page'
+          >
+            <svg
+              xmlns='http://www.w3.org/2000/svg'
+              fill='none'
+              viewBox='0 0 24 24'
+              strokeWidth='2'
+              stroke='currentColor'
+              className='size-6'
+            >
+              <path
+                strokeLinecap='round'
+                strokeLinejoin='round'
+                d='M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99'
+              />
+            </svg>
+          </button>
+          {/* Dark mode switch */}
+          <button
+            onClick={() => setDarkMode(!darkMode)}
+            className={topbarButtonClass}
+            aria-label='Toggle dark mode'
+          >
+            <svg
+              xmlns='http://www.w3.org/2000/svg'
+              fill='none'
+              viewBox='0 0 24 24'
+              strokeWidth='2'
+              stroke='currentColor'
+              className='size-6'
+            >
+              <path
+                strokeLinecap='round'
+                strokeLinejoin='round'
+                d='M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z'
+              />
+            </svg>
+          </button>
+        </div>
+      </nav>
+      <div
+        ref={linksRef}
+        className='fixed right-4 bottom-44 lg:bottom-4 z-50 flex flex-col items-end space-y-2'
+      >
+        <div
+          className={`flex flex-col items-end space-y-2 transition-all duration-200 ${
+            showLinks
+              ? 'opacity-100 translate-y-0'
+              : 'opacity-0 translate-y-2 pointer-events-none'
+          }`}
+        >
           <a
             href='https://github.com/mysxan/wordle-helper'
             target='_blank'
             rel='noopener noreferrer'
-            className='text-gray-700 dark:text-gray-300 hover:text-blue-500 dark:hover:text-blue-400 transition-colors'
+            className={`${topbarButtonClass} relative group`}
             aria-label='GitHub Repository'
           >
+            <span className='pointer-events-none absolute right-full top-1/2 -translate-y-1/2 mr-2 hidden sm:inline-flex items-center rounded-md border border-gray-200 dark:border-gray-600 bg-white/95 dark:bg-gray-800/95 px-2 py-1 text-sm text-gray-700 dark:text-gray-200 shadow-sm opacity-0 transition-opacity duration-150 group-hover:opacity-100'>
+              GitHub
+            </span>
             <svg className='w-6 h-6' fill='currentColor' viewBox='0 0 24 24'>
               <path
                 fillRule='evenodd'
@@ -251,72 +354,73 @@ function App() {
               />
             </svg>
           </a>
-        </div>
-
-        <div className='flex items-center space-x-2'>
-          {/* Reset button */}
-          <button
-            onClick={() => window.location.reload()}
-            className='p-2 rounded-full text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors'
-            aria-label='Reset page'
+          <a
+            href='https://mysxan.com/'
+            target='_blank'
+            rel='noopener noreferrer'
+            className={`${topbarButtonClass} relative group`}
+            aria-label='Main site'
           >
-            <svg
-              xmlns='http://www.w3.org/2000/svg'
-              fill='none'
-              viewBox='0 0 24 24'
-              stroke-width='2'
-              stroke='currentColor'
-              class='size-6'
-            >
-              <path
-                stroke-linecap='round'
-                stroke-linejoin='round'
-                d='M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99'
-              />
-            </svg>
-          </button>
-          {/* Dark mode switch */}
-          <button
-            onClick={() => setDarkMode(!darkMode)}
-            className='p-2 rounded-full text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors'
-            aria-label='Toggle dark mode'
-          >
-            <svg
-              xmlns='http://www.w3.org/2000/svg'
-              fill='none'
-              viewBox='0 0 24 24'
-              stroke-width='2'
-              stroke='currentColor'
-              class='size-6'
-            >
-              <path
-                stroke-linecap='round'
-                stroke-linejoin='round'
-                d='M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z'
-              />
-            </svg>
-          </button>
+            <span className='pointer-events-none absolute right-full top-1/2 -translate-y-1/2 mr-2 hidden sm:inline-flex items-center rounded-md border border-gray-200 dark:border-gray-600 bg-white/95 dark:bg-gray-800/95 px-2 py-1 text-sm text-gray-700 dark:text-gray-200 shadow-sm opacity-0 transition-opacity duration-150 group-hover:opacity-100 whitespace-nowrap'>
+              Main site
+            </span>
+            <img
+              src='https://mysxan.com/favicon.ico'
+              alt='Main site'
+              className='w-6 h-6'
+            />
+          </a>
         </div>
-      </nav>
+        <button
+          type='button'
+          onClick={() => setShowLinks((prev) => !prev)}
+          className={`${topbarButtonClass} relative group`}
+          aria-label='Links'
+          aria-expanded={showLinks}
+        >
+          <span className='pointer-events-none absolute right-full top-1/2 -translate-y-1/2 mr-2 hidden sm:inline-flex items-center rounded-md border border-gray-200 dark:border-gray-600 bg-white/95 dark:bg-gray-800/95 px-2 py-1 text-sm text-gray-700 dark:text-gray-200 shadow-sm opacity-0 transition-opacity duration-150 group-hover:opacity-100'>
+            Links
+          </span>
+          <svg className='w-6 h-6' viewBox='0 0 24 24' fill='none'>
+            <path
+              d='M10 13a5 5 0 0 1 0-7l2-2a5 5 0 1 1 7 7l-2 2'
+              stroke='currentColor'
+              strokeWidth='2'
+              strokeLinecap='round'
+              strokeLinejoin='round'
+            />
+            <path
+              d='M14 11a5 5 0 0 1 0 7l-2 2a5 5 0 0 1-7-7l2-2'
+              stroke='currentColor'
+              strokeWidth='2'
+              strokeLinecap='round'
+              strokeLinejoin='round'
+            />
+          </svg>
+        </button>
+      </div>
       <div
-        className='justify-start flex flex-col items-center transition-all duration-1000 space-y-8'
-        style={{ marginTop: shifted ? '5rem' : 'calc(50vh - 15rem)' }}
+        className='flex flex-col items-center transition-[padding-top] duration-700 ease-out space-y-8 px-4 pb-28 lg:pb-0'
+        style={contentStyle}
       >
-        <h1 className='text-6xl font-serif font-medium -mb-4 text-gray-700 dark:text-gray-300'>
+        <h1 className='text-5xl sm:text-6xl lg:text-7xl font-serif font-bold -mb-4 text-gray-700 dark:text-gray-300'>
           Wordle Helper
         </h1>
         <a
           href='https://www.nytimes.com/games/wordle/index.html'
           target='_blank'
           rel='noopener noreferrer'
-          className='text-l font-serif text-gray-500 dark:text-gray-400 hover:text-blue-500  dark:hover:text-blue-400 -mt-4 mb-4 space-y-8 transition-colors'
+          className='text-base sm:text-lg font-serif text-gray-500 dark:text-gray-400 hover:text-blue-500  dark:hover:text-blue-400 -mt-4 mb-4 space-y-8 transition-colors'
         >
           The New York Times Wordle
         </a>
 
-        <div className='space-y-4'>
+        <div className='space-y-3 sm:space-y-4'>
           {rows.map((row, rowIdx) => (
-            <div key={rowIdx} className='flex space-x-4 font-mono select-none'>
+            <div
+              key={rowIdx}
+              className='flex space-x-2 sm:space-x-4 font-mono select-none'
+            >
               {row.map((cell, colIdx) => {
                 let bgClass = 'bg-white';
                 let borderColorClass = 'border-gray-600';
@@ -332,11 +436,13 @@ function App() {
                   <div
                     key={colIdx}
                     onClick={() => handleCellClick(rowIdx, colIdx)}
-                    className={`w-16 h-16 flex justify-center items-center cursor-pointer transition-all ${
+                    className={`w-12 h-12 sm:w-16 sm:h-16 flex justify-center items-center cursor-pointer transition-all ${
                       isSelected ? 'border-4' : 'border-2'
                     } ${bgClass} ${borderColorClass}`}
                   >
-                    <span className={`text-2xl font-bold ${textColorClass}`}>
+                    <span
+                      className={`text-xl sm:text-2xl font-black ${textColorClass}`}
+                    >
                       {cell.letter}
                     </span>
                   </div>
@@ -346,38 +452,47 @@ function App() {
           ))}
         </div>
 
-        <hr className='min-w-96 border-gray-400' />
+        <hr className='w-full max-w-md sm:max-w-lg border-gray-400' />
 
-        <div className='min-w-96 w-full flex justify-center'>
+        <div className='w-full flex justify-center px-2 sm:px-4'>
           {rows.flat().every((cell) => cell.letter === '') ? (
-            <p className='text-gray-600 dark:text-gray-400 pt-0.5 font-serif text-center'>
+            <p className='text-sm sm:text-base text-gray-600 dark:text-gray-400 pt-0.5 font-serif text-center'>
               Type letters in order and use Backspace to delete. <br />
               Click a cell to cycle through filter rules: <br />
-              <span className='font-bold text-green-600'>Green</span> - Letter
+              <span className='font-black text-green-600'>Green</span> - Letter
               is correct and in the right spot. <br />
-              <span className='font-bold text-yellow-600'>Yellow</span> - Letter
+              <span className='font-black text-yellow-600'>Yellow</span> - Letter
               is correct but in the wrong spot. <br />
-              <span className='font-bold text-gray-600'>Gray</span> - Letter
+              <span className='font-black text-gray-600'>Gray</span> - Letter
               should not appear in the word.
             </p>
           ) : filteredWords.length === 1 ? (
-            <div className='text-4xl text-gray-800 dark:text-gray-300 font-serif font-medium text-center space-y-2 -mt-2'>
+            <div className='text-3xl sm:text-4xl text-gray-800 dark:text-gray-300 font-serif font-bold text-center space-y-2 -mt-2'>
               {filteredWords.map((word, idx) => (
                 <p key={idx}>{word}</p>
               ))}{' '}
-              <div className='max-w-lg px-12 text-center text-lg text-gray-800 dark:text-gray-400 font-serif italic font-normal'>
-                {definition}
+              <div className='max-w-lg px-4 sm:px-12 text-center text-base sm:text-lg text-gray-800 dark:text-gray-400 font-serif font-semibold'>
+                {definition ? (
+                  <>
+                    <span className='block font-bold'>
+                      {definition.replace(/\s*([^)]+\))\s*(.*)/, '$1')}
+                    </span>
+                    <span className='block font-medium'>
+                      {definition.replace(/\s*([^)]+\))\s*(.*)/, '$2')}
+                    </span>
+                  </>
+                ) : null}
               </div>
             </div>
           ) : (
-            <div className='text-lg text-gray-700 dark:text-gray-300 -mt-2'>
+            <div className='text-base sm:text-lg text-gray-700 dark:text-gray-300 -mt-2'>
               {wordRows.length > 0 ? (
                 wordRows.map((group, idx) => (
-                  <p key={idx} className='space-x-4'>
+                  <p key={idx} className='space-x-2 sm:space-x-4'>
                     {group.map((word, wIdx) => (
                       <span
                         key={wIdx}
-                        className='font-mono inline-block w-16 text-center'
+                        className='font-mono inline-block w-12 sm:w-16 text-center'
                       >
                         {word}
                       </span>
@@ -385,12 +500,71 @@ function App() {
                   </p>
                 ))
               ) : (
-                <p className='text-gray-600 dark:text-gray-400 pt-0.5 font-serif flex justify-center'>
+                <p className='text-sm sm:text-base text-gray-600 dark:text-gray-400 pt-0.5 font-serif flex justify-center'>
                   No matching word, please check your input.
                 </p>
               )}
             </div>
           )}
+        </div>
+      </div>
+      <div className='fixed bottom-0 left-0 right-0 z-40 lg:hidden bg-white/95 dark:bg-gray-800/95 border-t border-gray-200 dark:border-gray-700 backdrop-blur'>
+        <div className='max-w-xl mx-auto px-3 py-3 space-y-2'>
+          <div className='flex justify-center space-x-1'>
+            {'QWERTYUIOP'.split('').map((key) => (
+              <button
+                key={key}
+                type='button'
+                onClick={() => handleKeyInput(key)}
+                className='flex-1 h-10 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-100 font-semibold'
+                aria-label={`Letter ${key}`}
+              >
+                {key}
+              </button>
+            ))}
+          </div>
+          <div className='flex justify-center space-x-1'>
+            {'ASDFGHJKL'.split('').map((key) => (
+              <button
+                key={key}
+                type='button'
+                onClick={() => handleKeyInput(key)}
+                className='flex-1 h-10 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-100 font-semibold'
+                aria-label={`Letter ${key}`}
+              >
+                {key}
+              </button>
+            ))}
+          </div>
+          <div className='flex justify-center space-x-1'>
+            <button
+              type='button'
+              onClick={() => handleKeyInput('Backspace')}
+              className='flex-[1.3] h-10 rounded-md bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold'
+              aria-label='Backspace'
+            >
+              Del
+            </button>
+            {'ZXCVBNM'.split('').map((key) => (
+              <button
+                key={key}
+                type='button'
+                onClick={() => handleKeyInput(key)}
+                className='flex-1 h-10 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-100 font-semibold'
+                aria-label={`Letter ${key}`}
+              >
+                {key}
+              </button>
+            ))}
+            <button
+              type='button'
+              onClick={() => handleKeyInput('Enter')}
+              className='flex-[1.3] h-10 rounded-md bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold'
+              aria-label='Enter'
+            >
+              Next
+            </button>
+          </div>
         </div>
       </div>
     </div>
