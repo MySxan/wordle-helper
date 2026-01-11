@@ -232,6 +232,7 @@ function App() {
   const [darkMode, setDarkMode] = useState(false);
   const [showLinks, setShowLinks] = useState(false);
   const linksRef = useRef(null);
+  const keyboardRef = useRef(null);
   useEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add('dark');
@@ -255,8 +256,35 @@ function App() {
     };
   }, [showLinks]);
 
+  useEffect(() => {
+    const updateLinksOffset = () => {
+      const viewport = window.visualViewport;
+      const keyboardOffset = viewport
+        ? Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop)
+        : 0;
+      const keyboardHeight = keyboardRef.current?.offsetHeight || 0;
+      const value = `calc(${keyboardHeight}px + ${keyboardOffset}px + env(safe-area-inset-bottom) + 0.75rem)`;
+      document.documentElement.style.setProperty(
+        '--links-bottom-mobile',
+        value
+      );
+    };
+
+    updateLinksOffset();
+    window.addEventListener('resize', updateLinksOffset);
+    window.visualViewport?.addEventListener('resize', updateLinksOffset);
+    window.visualViewport?.addEventListener('scroll', updateLinksOffset);
+
+    return () => {
+      window.removeEventListener('resize', updateLinksOffset);
+      window.visualViewport?.removeEventListener('resize', updateLinksOffset);
+      window.visualViewport?.removeEventListener('scroll', updateLinksOffset);
+    };
+  }, []);
+
   const topbarButtonClass =
     'p-2 rounded-full text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors';
+  const linkButtonClass = `${topbarButtonClass} bg-white/90 dark:bg-gray-800/90`;
 
   const contentStyle = {
     paddingTop: shifted
@@ -326,7 +354,7 @@ function App() {
       </nav>
       <div
         ref={linksRef}
-        className='fixed right-4 bottom-48 lg:bottom-4 z-50 flex flex-col items-end space-y-2'
+        className='fixed right-4 bottom-[var(--links-bottom-mobile)] lg:bottom-4 z-50 flex flex-col items-end space-y-2'
       >
         <div
           className={`flex flex-col items-end space-y-2 transition-all duration-200 ${
@@ -339,7 +367,7 @@ function App() {
             href='https://github.com/mysxan/wordle-helper'
             target='_blank'
             rel='noopener noreferrer'
-            className={`${topbarButtonClass} relative group`}
+            className={`${linkButtonClass} relative group`}
             aria-label='GitHub Repository'
           >
             <span className='pointer-events-none absolute right-full top-1/2 -translate-y-1/2 mr-2 hidden sm:inline-flex items-center rounded-md border border-gray-200 dark:border-gray-600 bg-white/95 dark:bg-gray-800/95 px-2 py-1 text-sm text-gray-700 dark:text-gray-200 shadow-sm opacity-0 transition-opacity duration-150 group-hover:opacity-100'>
@@ -357,7 +385,7 @@ function App() {
             href='https://mysxan.com/'
             target='_blank'
             rel='noopener noreferrer'
-            className={`${topbarButtonClass} relative group`}
+            className={`${linkButtonClass} relative group`}
             aria-label='Main site'
           >
             <span className='pointer-events-none absolute right-full top-1/2 -translate-y-1/2 mr-2 hidden sm:inline-flex items-center rounded-md border border-gray-200 dark:border-gray-600 bg-white/95 dark:bg-gray-800/95 px-2 py-1 text-sm text-gray-700 dark:text-gray-200 shadow-sm opacity-0 transition-opacity duration-150 group-hover:opacity-100 whitespace-nowrap'>
@@ -373,7 +401,7 @@ function App() {
         <button
           type='button'
           onClick={() => setShowLinks((prev) => !prev)}
-          className={`${topbarButtonClass} relative group`}
+          className={`${linkButtonClass} relative group`}
           aria-label='Links'
           aria-expanded={showLinks}
         >
@@ -507,7 +535,10 @@ function App() {
           )}
         </div>
       </div>
-      <div className='fixed bottom-0 left-0 right-0 z-40 lg:hidden bg-white/95 dark:bg-gray-800/95 border-t border-gray-200 dark:border-gray-700 backdrop-blur safe-area-bottom'>
+      <div
+        ref={keyboardRef}
+        className='fixed bottom-0 left-0 right-0 z-40 lg:hidden bg-white/95 dark:bg-gray-800/95 border-t border-gray-200 dark:border-gray-700 backdrop-blur safe-area-bottom'
+      >
         <div className='max-w-xl mx-auto px-3 pt-3 pb-[calc(12px+env(safe-area-inset-bottom))] space-y-2'>
           <div className='flex justify-center space-x-1'>
             {'QWERTYUIOP'.split('').map((key) => (
