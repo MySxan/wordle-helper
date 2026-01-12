@@ -275,11 +275,17 @@ function App() {
     };
 
     updateLinksOffset();
+    const rafId = requestAnimationFrame(updateLinksOffset);
+    const timeoutId = setTimeout(updateLinksOffset, 150);
     window.addEventListener('resize', updateLinksOffset);
+    window.addEventListener('pageshow', updateLinksOffset);
     window.visualViewport?.addEventListener('resize', updateLinksOffset);
 
     return () => {
+      cancelAnimationFrame(rafId);
+      clearTimeout(timeoutId);
       window.removeEventListener('resize', updateLinksOffset);
+      window.removeEventListener('pageshow', updateLinksOffset);
       window.visualViewport?.removeEventListener('resize', updateLinksOffset);
     };
   }, []);
