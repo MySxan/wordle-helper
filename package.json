@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "homepage": "https://mysxan.github.io/wordle-helper",
+  "homepage": "https://apps.mysxan.com/wordle-helper/",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "build": "vite build",

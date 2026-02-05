@@ -400,7 +400,7 @@ function App() {
               Main site
             </span>
             <img
-              src='https://mysxan.com/favicon.ico'
+              src='./favicon.ico'
               alt='Main site'
               className='w-6 h-6'
             />
