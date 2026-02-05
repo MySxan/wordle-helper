@@ -399,11 +399,7 @@ function App() {
             <span className='pointer-events-none absolute right-full top-1/2 -translate-y-1/2 mr-2 hidden sm:inline-flex items-center rounded-md border border-gray-200 dark:border-gray-600 bg-white/95 dark:bg-gray-800/95 px-2 py-1 text-sm text-gray-700 dark:text-gray-200 shadow-sm opacity-0 transition-opacity duration-150 group-hover:opacity-100 whitespace-nowrap'>
               Main site
             </span>
-            <img
-              src='./favicon.ico'
-              alt='Main site'
-              className='w-6 h-6'
-            />
+            <img src='./favicon.ico' alt='Main site' className='w-6 h-6' />
           </a>
         </div>
         <button
